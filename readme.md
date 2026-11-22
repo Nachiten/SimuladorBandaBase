@@ -1,6 +1,6 @@
 # Simulador de Códigos de Línea
 
-Tutorial rápido para usar el simulador interactivo de códigos de línea y señales en banda base.
+Simulador para aprender y probar los diferentes codigos de linea vistos en Comunicaciones en UTN.
 
 ## Cómo usarlo
 
