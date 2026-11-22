@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulador de Códigos de Línea · UTN</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-soft: #eef2ff;
+      --header-bg: #0f172a;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header */
+    header {
+      background-color: var(--header-bg);
+      color: #ffffff;
+      border-bottom: 1px solid #1e293b;
+      padding: 1rem 1.5rem;
+    }
+
+    .container {
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .header-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.1rem;
+      height: 2.1rem;
+      border-radius: 0.5rem;
+      background: var(--primary);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.875rem;
+      color: #fff;
+    }
+
+    .brand h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .brand p {
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    /* Buttons */
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .btn-machete {
+      background: #1e293b;
+      color: #a5b4fc;
+      border-color: #334155;
+      padding: 0.5rem 0.85rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-machete:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    /* Collapsible Machete Panel */
+    .machete-panel {
+      background: #1e1b4b;
+      color: #f1f5f9;
+      border-bottom: 1px solid #312e81;
+      padding: 1.25rem 1.5rem;
+    }
+
+    .machete-panel.hidden {
+      display: none;
+    }
+
+    .machete-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.85rem;
+    }
+
+    .machete-header h2 {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #a5b4fc;
+    }
+
+    .machete-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.75rem;
+      font-size: 0.78rem;
+    }
+
+    .machete-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid #334155;
+      border-radius: 0.75rem;
+      padding: 0.85rem;
+    }
+
+    .machete-card h3 {
+      font-size: 0.82rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .machete-card code {
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.1);
+      padding: 0.1rem 0.3rem;
+      border-radius: 0.25rem;
+      color: #fde68a;
+    }
+
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+
+    .controls-card {
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .controls-top {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 900px) {
+      .controls-top {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .label-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .label-row label {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.15rem 0.6rem;
+      border-radius: 9999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid #c7d2fe;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .bit-input {
+      width: 100%;
+      font-family: var(--font-mono);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      padding: 0.7rem 5.5rem 0.7rem 1rem;
+      border: 2px solid var(--border-strong);
+      border-radius: 0.75rem;
+      background: var(--bg);
+      color: #0f172a;
+      outline: none;
+      transition: border-color 0.15s, background-color 0.15s;
+    }
+
+    .bit-input:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+    }
+
+    .btn-clear {
+      position: absolute;
+      right: 0.5rem;
+      background: #e2e8f0;
+      color: #475569;
+      padding: 0.35rem 0.65rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-clear:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .helper-text {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      margin-top: 0.25rem;
+    }
+
+    .presets-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .btn-preset {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+      background: var(--surface-alt);
+      color: #334155;
+      border-color: var(--border);
+    }
+
+    .btn-preset:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-preset.primary {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: #c7d2fe;
+    }
+
+    .btn-preset.primary:hover {
+      background: #e0e7ff;
+    }
+
+    .btn-random {
+      font-size: 0.75rem;
+      padding: 0.35rem 0.65rem;
+      background: #ecfdf5;
+      color: #047857;
+      border-color: #a7f3d0;
+    }
+
+    .btn-random:hover {
+      background: #d1fae5;
+    }
+
+    /* Conditions Box */
+    .conditions-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .box-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .cond-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+    }
+
+    .cond-row code {
+      font-family: var(--font-mono);
+      font-weight: 700;
+    }
+
+    .segmented {
+      display: inline-flex;
+      background: #e2e8f0;
+      padding: 0.15rem;
+      border-radius: 0.5rem;
+    }
+
+    .seg-btn {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.25rem 0.7rem;
+      background: transparent;
+      color: #475569;
+      border-radius: 0.4rem;
+    }
+
+    .seg-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+
+    .select-conv {
+      width: 100%;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.78rem;
+      font-family: inherit;
+      font-weight: 500;
+      border: 1px solid var(--border-strong);
+      border-radius: 0.5rem;
+      background: #ffffff;
+      color: var(--text);
+      margin-top: 0.25rem;
+    }
+
+    /* Filter Bar */
+    .filters-section {
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .filters-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .filter-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .btn-filter {
+      font-size: 0.74rem;
+      padding: 0.3rem 0.65rem;
+      background: var(--surface-alt);
+      color: #475569;
+      border-color: var(--border);
+    }
+
+    .btn-filter:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-filter.exam {
+      background: #fffbeb;
+      color: #92400e;
+      border-color: #fde68a;
+    }
+
+    .btn-filter.exam:hover {
+      background: #fef3c7;
+    }
+
+    .checkbox-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chk-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.7rem;
+      border-radius: 0.65rem;
+      border: 1px solid var(--border-strong);
+      background: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s;
+    }
+
+    .chk-pill.unchecked {
+      background: var(--surface-alt);
+      border-color: var(--border);
+      color: #94a3b8;
+    }
+
+    .chk-pill input {
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .color-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 9999px;
+      display: inline-block;
+    }
+
+    /* Charts Section */
+    .charts-card {
+      overflow: hidden;
+    }
+
+    .charts-topbar {
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .charts-title {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .live-dot {
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .line-sample-t {
+      width: 1rem;
+      border-top: 2px dashed #94a3b8;
+    }
+
+    .line-sample-t2 {
+      width: 1rem;
+      border-top: 1px dotted #94a3b8;
+    }
+
+    .tag-b {
+      background: #fef3c7;
+      color: #92400e;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.68rem;
+      padding: 0.05rem 0.35rem;
+      border-radius: 0.25rem;
+    }
+
+    .tag-v {
+      background: #ffe4e6;
+      color: #9f1239;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 0.68rem;
+      padding: 0.05rem 0.35rem;
+      border-radius: 0.25rem;
+    }
+
+    .charts-scroll {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .chart-row {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .chart-row:last-child {
+      border-bottom: none;
+    }
+
+    .empty-state {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container header-inner">
+      <div class="brand">
+        <span class="brand-badge">01</span>
+        <div>
+          <h1>Simulador de Códigos de Línea (Banda Base)</h1>
+          <p>Visualización en tiempo real · Convenciones UTN (Unipolar, Polar, AMI, HDB-3, Manchester y Miller)</p>
+        </div>
+      </div>
+      <button type="button" id="toggleMacheteBtn" class="btn-machete">📖 Machete de Reglas</button>
+    </div>
+  </header>
+
+  <section id="machetePanel" class="machete-panel hidden">
+    <div class="container">
+      <div class="machete-header">
+        <h2>Reglas Rápidas de Dibujo (Examen UTN)</h2>
+        <button type="button" id="closeMacheteBtn" class="btn-machete">Cerrar ✕</button>
+      </div>
+      <div class="machete-grid">
+        <div class="machete-card">
+          <h3 style="color:#38bdf8;">1. Unipolar NRZ &amp; Polar NRZ</h3>
+          <p><strong>Unipolar:</strong> <code>1</code> = +V, <code>0</code> = 0V (alta componente continua).</p>
+          <p style="margin-top:0.3rem;"><strong>Polar:</strong> <code>1</code> = +V, <code>0</code> = -V (reduce continua; sin transiciones en bits iguales).</p>
+        </div>
+        <div class="machete-card">
+          <h3 style="color:#34d399;">2. AMI (Bipolar NRZ)</h3>
+          <p><code>0</code> = 0V. Cada <code>1</code> alterna polaridad (+V, -V, +V...). Anula componente continua, pero 4 o más ceros seguidos pierden sincronismo.</p>
+        </div>
+        <div class="machete-card">
+          <h3 style="color:#fbbf24;">3. HDB-3 (Sustitución de 0000)</h3>
+          <p>Reemplaza cada grupo <code>0000</code> según pulsos (<code>1</code> o <code>B</code>) desde la última violación <code>V</code>:</p>
+          <p style="margin-top:0.25rem;">• <strong>Impar:</strong> <code>000V</code> &nbsp;|&nbsp; • <strong>Par (o 0):</strong> <code>B00V</code></p>
+          <p style="margin-top:0.2rem;"><code>B</code> respeta alternancia AMI; <code>V</code> repite el signo anterior.</p>
+        </div>
+        <div class="machete-card">
+          <h3 style="color:#c084fc;">4. Manchester Convencional</h3>
+          <p>Transición obligatoria en la mitad del bit (T/2) para reloj. En estándar IEEE/UTN: <code>1</code> sube (-V → +V) y <code>0</code> baja (+V → -V).</p>
+        </div>
+        <div class="machete-card">
+          <h3 style="color:#f472b6;">5. Manchester Diferencial</h3>
+          <p>Siempre transiciona en T/2 (solo reloj). Dato al <strong>inicio</strong> del bit: <code>0</code> = cambia nivel al iniciar; <code>1</code> = mantiene nivel al iniciar.</p>
+        </div>
+        <div class="machete-card">
+          <h3 style="color:#22d3ee;">6. Miller (Delay Modulation)</h3>
+          <p><code>1</code> = transición en T/2. <code>0</code> = sin transición en T/2; transiciona al <strong>final</strong> (T) únicamente si el siguiente bit también es <code>0</code>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- Panel de Controles -->
+    <section class="card controls-card">
+      <div class="controls-top">
+        <!-- Input Binario -->
+        <div class="input-group">
+          <div class="label-row">
+            <label for="bitInput">Secuencia Binaria de Entrada (Tiempo Real)</label>
+            <span id="bitCounter" class="badge">16 bits</span>
+          </div>
+          <div class="input-wrapper">
+            <input
+              id="bitInput"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="48"
+              value="1110000000001001"
+              placeholder="Escribí 0s y 1s..."
+              class="bit-input"
+            />
+            <button type="button" id="clearBtn" class="btn-clear">Limpiar</button>
+          </div>
+          <p class="helper-text">Solo se admiten <strong>0</strong> y <strong>1</strong> (máx. 48 bits). Se actualiza en tiempo real al escribir.</p>
+
+          <div class="presets-row">
+            <span class="presets-label">Ejemplos UTN:</span>
+            <button type="button" class="btn-preset primary" data-preset="1110000000001001">Final 2023 (1110000000001001)</button>
+            <button type="button" class="btn-preset" data-preset="01001100011">Final (01001100011)</button>
+            <button type="button" class="btn-preset" data-preset="010110101">Apunte (010110101)</button>
+            <button type="button" id="randomBtn" class="btn-random">🎲 Aleatorio (12 bits)</button>
+          </div>
+        </div>
+
+        <!-- Condiciones Iniciales -->
+        <div class="conditions-box">
+          <div class="box-title">Condiciones Iniciales y Convención</div>
+
+          <div class="cond-row">
+            <span>Primer <code>1</code> en AMI / HDB-3:</span>
+            <div class="segmented">
+              <button type="button" id="amiPosBtn" class="seg-btn active">+V</button>
+              <button type="button" id="amiNegBtn" class="seg-btn">-V</button>
+            </div>
+          </div>
+
+          <div class="cond-row">
+            <span>Nivel previo (Dif. Manch. / Miller):</span>
+            <div class="segmented">
+              <button type="button" id="initPosBtn" class="seg-btn active">+V</button>
+              <button type="button" id="initNegBtn" class="seg-btn">-V</button>
+            </div>
+          </div>
+
+          <div>
+            <label for="manchesterSelect" style="font-size:0.78rem; font-weight:600;">Convención Manchester Convencional:</label>
+            <select id="manchesterSelect" class="select-conv">
+              <option value="ieee" selected>Estándar IEEE / UTN (1: sube en medio, 0: baja en medio)</option>
+              <option value="thomas">Invertida / Thomas (1: baja en medio, 0: sube en medio)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros de Codificaciones -->
+      <div class="filters-section">
+        <div class="filters-header">
+          <div style="display:flex; align-items:center; gap:0.5rem;">
+            <span class="box-title">Codificaciones Visibles</span>
+            <span id="visibleCountBadge" class="badge">7 de 7</span>
+          </div>
+          <div class="filter-actions">
+            <button type="button" id="filterAllBtn" class="btn-filter">Mostrar todas</button>
+            <button type="button" id="filterExamBtn" class="btn-filter exam">🎯 Solo examen (ID2)</button>
+            <button type="button" id="filterNoneBtn" class="btn-filter">Ocultar todas</button>
+          </div>
+        </div>
+        <div id="codeCheckboxesContainer" class="checkbox-list"></div>
+      </div>
+    </section>
+
+    <!-- Gráficos Alineados -->
+    <section class="card charts-card">
+      <div class="charts-topbar">
+        <div class="charts-title">
+          <span class="live-dot"></span>
+          <span>Diagramas Temporales Alineados</span>
+        </div>
+        <div class="legend">
+          <span class="legend-item"><span class="line-sample-t"></span> Borde de bit (T)</span>
+          <span class="legend-item"><span class="line-sample-t2"></span> Mitad de bit (T/2)</span>
+          <span class="legend-item"><span class="tag-b">B</span> <span class="tag-v">V</span> Pulsos HDB-3</span>
+        </div>
+      </div>
+      <div class="charts-scroll">
+        <div id="chartsWrapper"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Herramienta de práctica interactiva · Unidad 4: Códigos de Línea y Señales en Banda Base (UTN)
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      // =========================================================================
+      // ESTADO GLOBAL
+      // =========================================================================
+      const state = {
+        bits: "1110000000001001",
+        amiFirstPolarity: 1,
+        initialLevel: 1,
+        manchesterMode: "ieee",
+        visibleCharts: {
+          unipolar: true,
+          polar: true,
+          ami: true,
+          hdb3: true,
+          manchester: true,
+          diffManchester: true,
+          miller: true
+        }
+      };
+
+      const CHART_DEFS = [
+        {
+          id: "unipolar",
+          shortLabel: "Unipolar NRZ",
+          title: "1. Unipolar NRZ",
+          desc: "1 → +V | 0 → 0V",
+          color: "#0284c7"
+        },
+        {
+          id: "polar",
+          shortLabel: "Polar NRZ",
+          title: "2. Polar NRZ",
+          desc: "1 → +V | 0 → -V",
+          color: "#2563eb"
+        },
+        {
+          id: "ami",
+          shortLabel: "AMI (Bipolar)",
+          title: "3. AMI (Bipolar NRZ)",
+          desc: "0 → 0V | 1 alterna ±V",
+          color: "#059669"
+        },
+        {
+          id: "hdb3",
+          shortLabel: "HDB-3",
+          title: "4. HDB-3",
+          desc: "Par: B00V | Impar: 000V",
+          color: "#d97706"
+        },
+        {
+          id: "manchester",
+          shortLabel: "Manchester",
+          title: "5. Manchester Convencional",
+          desc: "Transición en T/2",
+          color: "#7c3aed"
+        },
+        {
+          id: "diffManchester",
+          shortLabel: "Manchester Dif.",
+          title: "6. Manchester Diferencial",
+          desc: "0: cambia inicio | 1: mantiene",
+          color: "#db2777"
+        },
+        {
+          id: "miller",
+          shortLabel: "Miller",
+          title: "7. Miller (Delay Mod.)",
+          desc: "1: medio | 00: borde entre 0s",
+          color: "#0891b2"
+        }
+      ];
+
+      // =========================================================================
+      // GENERACIÓN DE FORMAS DE ONDA
+      // Cada bit se representa por [primeraMitad, segundaMitad] con niveles -1, 0, +1
+      // =========================================================================
+      function computeWaveforms(bits) {
+        const n = bits.length;
+        const unipolar = [];
+        const polar = [];
+        const ami = [];
+        const hdb3 = [];
+        const manchester = [];
+        const diffManchester = [];
+        const miller = [];
+
+        // 1. Unipolar NRZ & 2. Polar NRZ
+        for (let i = 0; i < n; i++) {
+          const b = bits[i];
+          unipolar.push(b === "1" ? [1, 1] : [0, 0]);
+          polar.push(b === "1" ? [1, 1] : [-1, -1]);
+        }
+
+        // 3. AMI (Bipolar NRZ)
+        let lastAmiPol = -state.amiFirstPolarity;
+        for (let i = 0; i < n; i++) {
+          if (bits[i] === "1") {
+            lastAmiPol = -lastAmiPol;
+            ami.push([lastAmiPol, lastAmiPol]);
+          } else {
+            ami.push([0, 0]);
+          }
+        }
+
+        // 4. HDB-3 (Convención UTN: Par -> B00V, Impar -> 000V)
+        let lastHdb3Pol = -state.amiFirstPolarity;
+        let pulsesSinceLastV = 0;
+        let idx = 0;
+        while (idx < n) {
+          if (bits.slice(idx, idx + 4) === "0000") {
+            if (pulsesSinceLastV % 2 === 0) {
+              // Par (incluye 0) -> B00V
+              lastHdb3Pol = -lastHdb3Pol; // B respeta alternancia AMI
+              const bPol = lastHdb3Pol;
+              const vPol = lastHdb3Pol; // V viola alternancia (mismo signo que B)
+              hdb3.push({ levels: [bPol, bPol], tag: "B" });
+              hdb3.push({ levels: [0, 0], tag: "" });
+              hdb3.push({ levels: [0, 0], tag: "" });
+              hdb3.push({ levels: [vPol, vPol], tag: "V" });
+            } else {
+              // Impar -> 000V
+              const vPol = lastHdb3Pol; // V viola alternancia (mismo signo que pulso previo)
+              hdb3.push({ levels: [0, 0], tag: "" });
+              hdb3.push({ levels: [0, 0], tag: "" });
+              hdb3.push({ levels: [0, 0], tag: "" });
+              hdb3.push({ levels: [vPol, vPol], tag: "V" });
+            }
+            pulsesSinceLastV = 0;
+            idx += 4;
+          } else {
+            if (bits[idx] === "1") {
+              lastHdb3Pol = -lastHdb3Pol;
+              pulsesSinceLastV += 1;
+              hdb3.push({ levels: [lastHdb3Pol, lastHdb3Pol], tag: "" });
+            } else {
+              hdb3.push({ levels: [0, 0], tag: "" });
+            }
+            idx += 1;
+          }
+        }
+
+        // 5. Manchester Convencional
+        for (let i = 0; i < n; i++) {
+          const b = bits[i];
+          if (state.manchesterMode === "ieee") {
+            manchester.push(b === "1" ? [-1, 1] : [1, -1]);
+          } else {
+            manchester.push(b === "1" ? [1, -1] : [-1, 1]);
+          }
+        }
+
+        // 6. Manchester Diferencial
+        let currDiff = state.initialLevel;
+        for (let i = 0; i < n; i++) {
+          if (bits[i] === "0") {
+            currDiff = -currDiff; // Transición al inicio para bit 0
+          }
+          const firstHalf = currDiff;
+          currDiff = -currDiff; // Transición obligatoria en T/2
+          const secondHalf = currDiff;
+          diffManchester.push([firstHalf, secondHalf]);
+        }
+
+        // 7. Miller (Delay Modulation)
+        let currMiller = state.initialLevel;
+        for (let i = 0; i < n; i++) {
+          if (bits[i] === "1") {
+            const m1 = currMiller;
+            currMiller = -currMiller;
+            const m2 = currMiller;
+            miller.push([m1, m2]);
+          } else {
+            miller.push([currMiller, currMiller]);
+            if (i + 1 < n && bits[i + 1] === "0") {
+              currMiller = -currMiller; // Transición en borde final entre dos 0s
+            }
+          }
+        }
+
+        return {
+          unipolar,
+          polar,
+          ami,
+          hdb3,
+          manchester,
+          diffManchester,
+          miller
+        };
+      }
+
+      // =========================================================================
+      // RENDERIZADO DE CHECKBOXES DE FILTRO
+      // =========================================================================
+      function renderCodeCheckboxes() {
+        const container = document.getElementById("codeCheckboxesContainer");
+        const badge = document.getElementById("visibleCountBadge");
+        const activeCount = CHART_DEFS.filter((c) => state.visibleCharts[c.id]).length;
+        badge.textContent = activeCount + " de " + CHART_DEFS.length;
+
+        container.innerHTML = CHART_DEFS.map((chart) => {
+          const isChecked = state.visibleCharts[chart.id];
+          return (
+            '<label class="chk-pill ' + (isChecked ? "" : "unchecked") + '">' +
+              '<input type="checkbox" data-chart-id="' + chart.id + '" ' + (isChecked ? "checked" : "") + ' />' +
+              '<span class="color-dot" style="background-color:' + (isChecked ? chart.color : "#cbd5e1") + ';"></span>' +
+              '<span>' + chart.shortLabel + '</span>' +
+            '</label>'
+          );
+        }).join("");
+
+        const inputs = container.querySelectorAll('input[type="checkbox"]');
+        inputs.forEach((chk) => {
+          chk.addEventListener("change", (e) => {
+            const id = e.target.getAttribute("data-chart-id");
+            state.visibleCharts[id] = e.target.checked;
+            renderCodeCheckboxes();
+            renderAllCharts();
+          });
+        });
+      }
+
+      // =========================================================================
+      // RENDERIZADO SVG DE LOS DIAGRAMAS TEMPORALES
+      // =========================================================================
+      function renderAllCharts() {
+        const wrapper = document.getElementById("chartsWrapper");
+        const bits = state.bits;
+        const n = bits.length;
+
+        document.getElementById("bitCounter").textContent = n + (n === 1 ? " bit" : " bits");
+
+        if (n === 0) {
+          wrapper.innerHTML = '<div class="empty-state">Ingresá al menos un bit (<strong>0</strong> o <strong>1</strong>) para visualizar las señales.</div>';
+          return;
+        }
+
+        const activeCharts = CHART_DEFS.filter((c) => state.visibleCharts[c.id]);
+        if (activeCharts.length === 0) {
+          wrapper.innerHTML = '<div class="empty-state">No hay codificaciones seleccionadas. Activá un checkbox arriba o tocá <strong>Mostrar todas</strong>.</div>';
+          return;
+        }
+
+        const waveforms = computeWaveforms(bits);
+
+        // Geometría compartida para alineación exacta
+        const labelColWidth = 225;
+        const bitWidth = Math.max(46, Math.min(68, Math.floor(820 / Math.max(n, 8))));
+        const rightPad = 28;
+        const totalWidth = labelColWidth + n * bitWidth + rightPad;
+
+        const headerHeight = 38;
+        const rowHeight = 104;
+        const yPosV = 24;
+        const yZero = 54;
+        const yNegV = 84;
+
+        const levelToY = (lvl) => {
+          if (lvl === 1) return yPosV;
+          if (lvl === -1) return yNegV;
+          return yZero;
+        };
+
+        // 1. Cabecera superior con los bits alineados sobre cada intervalo T
+        let headerSvg = '<div class="chart-row" style="background:#f8fafc;">';
+        headerSvg += '<svg width="' + totalWidth + '" height="' + headerHeight + '" viewBox="0 0 ' + totalWidth + ' ' + headerHeight + '" style="display:block;">';
+        headerSvg += '<text x="16" y="24" font-size="11" font-weight="700" fill="#64748b" font-family="system-ui, sans-serif">BITS DE ENTRADA</text>';
+
+        for (let i = 0; i < n; i++) {
+          const xStart = labelColWidth + i * bitWidth;
+          const xCenter = xStart + bitWidth / 2;
+          const bitChar = bits[i];
+          const bitColor = bitChar === "1" ? "#4338ca" : "#334155";
+          const boxFill = bitChar === "1" ? "#eef2ff" : "#f1f5f9";
+
+          headerSvg += '<rect x="' + (xStart + 3) + '" y="6" width="' + (bitWidth - 6) + '" height="26" rx="6" fill="' + boxFill + '" />';
+          headerSvg += '<text x="' + xCenter + '" y="24" text-anchor="middle" font-size="14" font-weight="700" fill="' + bitColor + '" font-family="ui-monospace, monospace">' + bitChar + '</text>';
+          headerSvg += '<line x1="' + xStart + '" y1="0" x2="' + xStart + '" y2="' + headerHeight + '" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,3" />';
+        }
+        headerSvg += '<line x1="' + (labelColWidth + n * bitWidth) + '" y1="0" x2="' + (labelColWidth + n * bitWidth) + '" y2="' + headerHeight + '" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3,3" />';
+        headerSvg += '</svg></div>';
+
+        // 2. Filas de cada señal activa
+        let rowsHtml = headerSvg;
+
+        activeCharts.forEach((chart) => {
+          const data = waveforms[chart.id];
+          let svg = '<div class="chart-row">';
+          svg += '<svg width="' + totalWidth + '" height="' + rowHeight + '" viewBox="0 0 ' + totalWidth + ' ' + rowHeight + '" style="display:block;">';
+
+          // Etiqueta izquierda
+          svg += '<text x="16" y="42" font-size="13" font-weight="700" fill="#0f172a" font-family="system-ui, sans-serif">' + chart.title + '</text>';
+          svg += '<text x="16" y="60" font-size="11" font-weight="500" fill="#64748b" font-family="system-ui, sans-serif">' + chart.desc + '</text>';
+
+          // Marcas eje Y (+V, 0, -V)
+          svg += '<text x="' + (labelColWidth - 8) + '" y="' + (yPosV + 4) + '" text-anchor="end" font-size="10" font-weight="700" fill="#64748b" font-family="ui-monospace, monospace">+V</text>';
+          svg += '<text x="' + (labelColWidth - 8) + '" y="' + (yZero + 4) + '" text-anchor="end" font-size="10" font-weight="700" fill="#94a3b8" font-family="ui-monospace, monospace">0</text>';
+          svg += '<text x="' + (labelColWidth - 8) + '" y="' + (yNegV + 4) + '" text-anchor="end" font-size="10" font-weight="700" fill="#64748b" font-family="ui-monospace, monospace">-V</text>';
+
+          // Eje horizontal 0V
+          svg += '<line x1="' + labelColWidth + '" y1="' + yZero + '" x2="' + (labelColWidth + n * bitWidth) + '" y2="' + yZero + '" stroke="#cbd5e1" stroke-width="1.2" />';
+
+          // Líneas guía verticales de bit (T) y medio bit (T/2)
+          for (let i = 0; i <= n; i++) {
+            const xT = labelColWidth + i * bitWidth;
+            svg += '<line x1="' + xT + '" y1="6" x2="' + xT + '" y2="' + (rowHeight - 6) + '" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="4,3" />';
+            if (i < n) {
+              const xHalf = xT + bitWidth / 2;
+              svg += '<line x1="' + xHalf + '" y1="10" x2="' + xHalf + '" y2="' + (rowHeight - 10) + '" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2,3" />';
+            }
+          }
+
+          // Construcción de polilínea escalonada de la onda
+          let pathD = "";
+          let prevY = null;
+
+          for (let i = 0; i < n; i++) {
+            const item = chart.id === "hdb3" ? data[i].levels : data[i];
+            const tag = chart.id === "hdb3" ? data[i].tag : "";
+
+            const y1 = levelToY(item[0]);
+            const y2 = levelToY(item[1]);
+
+            const x0 = labelColWidth + i * bitWidth;
+            const xMid = x0 + bitWidth / 2;
+            const x1 = x0 + bitWidth;
+
+            if (i === 0) {
+              pathD += "M " + x0 + " " + y1;
+            } else if (prevY !== y1) {
+              pathD += " L " + x0 + " " + y1;
+            }
+
+            pathD += " L " + xMid + " " + y1;
+            if (y2 !== y1) {
+              pathD += " L " + xMid + " " + y2;
+            }
+            pathD += " L " + x1 + " " + y2;
+            prevY = y2;
+
+            // Etiquetas B y V en HDB-3
+            if (tag === "B" || tag === "V") {
+              const isPos = item[0] === 1;
+              const badgeY = isPos ? yPosV - 16 : yNegV + 4;
+              const bgCol = tag === "B" ? "#fef3c7" : "#ffe4e6";
+              const txtCol = tag === "B" ? "#92400e" : "#9f1239";
+              svg += '<rect x="' + (xMid - 9) + '" y="' + badgeY + '" width="18" height="14" rx="4" fill="' + bgCol + '" />';
+              svg += '<text x="' + xMid + '" y="' + (badgeY + 11) + '" text-anchor="middle" font-size="10" font-weight="700" fill="' + txtCol + '" font-family="ui-monospace, monospace">' + tag + '</text>';
+            }
+          }
+
+          svg += '<path d="' + pathD + '" fill="none" stroke="' + chart.color + '" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />';
+          svg += '</svg></div>';
+          rowsHtml += svg;
+        });
+
+        wrapper.innerHTML = rowsHtml;
+      }
+
+      // =========================================================================
+      // EVENT LISTENERS
+      // =========================================================================
+      const bitInput = document.getElementById("bitInput");
+      bitInput.addEventListener("input", (e) => {
+        const cleaned = e.target.value.replace(/[^01]/g, "").slice(0, 48);
+        if (e.target.value !== cleaned) {
+          e.target.value = cleaned;
+        }
+        state.bits = cleaned;
+        renderAllCharts();
+      });
+
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        bitInput.value = "";
+        state.bits = "";
+        bitInput.focus();
+        renderAllCharts();
+      });
+
+      document.querySelectorAll("[data-preset]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const seq = btn.getAttribute("data-preset");
+          bitInput.value = seq;
+          state.bits = seq;
+          renderAllCharts();
+        });
+      });
+
+      document.getElementById("randomBtn").addEventListener("click", () => {
+        let rand = "";
+        for (let i = 0; i < 12; i++) {
+          rand += Math.random() < 0.5 ? "0" : "1";
+        }
+        bitInput.value = rand;
+        state.bits = rand;
+        renderAllCharts();
+      });
+
+      // Toggles de polaridad AMI / HDB-3
+      const amiPosBtn = document.getElementById("amiPosBtn");
+      const amiNegBtn = document.getElementById("amiNegBtn");
+      amiPosBtn.addEventListener("click", () => {
+        state.amiFirstPolarity = 1;
+        amiPosBtn.classList.add("active");
+        amiNegBtn.classList.remove("active");
+        renderAllCharts();
+      });
+      amiNegBtn.addEventListener("click", () => {
+        state.amiFirstPolarity = -1;
+        amiNegBtn.classList.add("active");
+        amiPosBtn.classList.remove("active");
+        renderAllCharts();
+      });
+
+      // Toggles de nivel previo Manchester Dif. / Miller
+      const initPosBtn = document.getElementById("initPosBtn");
+      const initNegBtn = document.getElementById("initNegBtn");
+      initPosBtn.addEventListener("click", () => {
+        state.initialLevel = 1;
+        initPosBtn.classList.add("active");
+        initNegBtn.classList.remove("active");
+        renderAllCharts();
+      });
+      initNegBtn.addEventListener("click", () => {
+        state.initialLevel = -1;
+        initNegBtn.classList.add("active");
+        initPosBtn.classList.remove("active");
+        renderAllCharts();
+      });
+
+      // Selector de convención Manchester
+      document.getElementById("manchesterSelect").addEventListener("change", (e) => {
+        state.manchesterMode = e.target.value;
+        renderAllCharts();
+      });
+
+      // Panel Machete
+      const machetePanel = document.getElementById("machetePanel");
+      document.getElementById("toggleMacheteBtn").addEventListener("click", () => {
+        machetePanel.classList.toggle("hidden");
+      });
+      document.getElementById("closeMacheteBtn").addEventListener("click", () => {
+        machetePanel.classList.add("hidden");
+      });
+
+      // Botones rápidos de filtro
+      document.getElementById("filterAllBtn").addEventListener("click", () => {
+        CHART_DEFS.forEach((c) => { state.visibleCharts[c.id] = true; });
+        renderCodeCheckboxes();
+        renderAllCharts();
+      });
+
+      document.getElementById("filterExamBtn").addEventListener("click", () => {
+        const examSet = new Set(["ami", "hdb3", "diffManchester", "miller"]);
+        CHART_DEFS.forEach((c) => { state.visibleCharts[c.id] = examSet.has(c.id); });
+        renderCodeCheckboxes();
+        renderAllCharts();
+      });
+
+      document.getElementById("filterNoneBtn").addEventListener("click", () => {
+        CHART_DEFS.forEach((c) => { state.visibleCharts[c.id] = false; });
+        renderCodeCheckboxes();
+        renderAllCharts();
+      });
+
+      // Inicialización
+      renderCodeCheckboxes();
+      renderAllCharts();
+    })();
+  </script>
+</body>
+</html>
